@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 import sys
-
+import pdb
 
 if __name__ == "__main__":
 
@@ -33,26 +33,32 @@ if __name__ == "__main__":
         eyes = sorted(eyes, key=lambda e: e[1])[:2]
 
     # do pre-processing for better detection
-    # alpha = np.array([2.0])
+    # alpha = np.array([2.5])
     # beta = np.array([-50.0])
     # # cv2.add(roi_gray, beta, roi_gray)
     # cv2.multiply(roi_gray, alpha, roi_gray)
 
+    # np.savetxt("foo.csv", roi_gray, delimiter=",")
+
+    cv2.imshow('gray (press any key to quit)', roi_gray)
     # blurImg = roi_gray
-    blurImg = cv2.medianBlur(roi_gray, 5)
+    blurImg = cv2.medianBlur(roi_gray, 3)
     # blurImg = cv2.GaussianBlur(roi_gray, (5,5), 4)
 
     eyeNum = 0
     eyeImage = np.zeros(( max(eyes[0][1], eyes[1][1]), eyes[0][0] + eyes[1][0], 3))
-    for (ex, ey, eh, ew) in eyes:
+    for (ex, ey, ew, eh) in eyes:
         eyeNum += 1
         cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
         # detect pupils
         eye_gray = blurImg[ey:ey + eh, ex:ex + ew]
-        cv2.imwrite('testeye' + str(eyeNum) + '.png', eye_gray)
+        # cv2.imwrite('testeye' + str(eyeNum) + '.png', eye_gray)
 
         eye_color = roi_color[ey:ey + eh, ex:ex + ew]
+
+        print np.min(eye_gray)
+        print np.max(eye_gray)
 
         # set a low threshold (param2) so that we are guaranteed at least 1. Set a high minimum distance (1000)
         # so that we have at most 1
@@ -70,7 +76,7 @@ if __name__ == "__main__":
 
     # newImg = cv2.resize(image, (960, 540))
     cv2.imshow('image (press any key to quit)', roi_color)
-    # cv2.imshow('gray (press any key to quit)', roi_gray)
+
 
     key = -1
     while key == -1:
