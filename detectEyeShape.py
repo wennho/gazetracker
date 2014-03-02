@@ -23,6 +23,8 @@ imgCenter = (origImg.shape[0] / 2, origImg.shape[1] / 2)
 
 img = cv2.GaussianBlur(origImg, (0, 0), 1)
 
+# convert origImg back to color
+origImg = cv2.cvtColor(origImg, cv2.COLOR_GRAY2RGB)
 
 newImg = np.zeros(img.shape)
 newImg[img < 44] = 1
@@ -57,6 +59,8 @@ yOrigPoints = np.array([
 ])
 yPoints = cv2.getRotationMatrix2D(imgCenter, -angle, 1).dot(yOrigPoints).astype(int)
 
+eyeBase = yPoints[:,1]  # use yMax since y-axis increases downwards
+
 yOrigPoints = yOrigPoints[:2].astype(int)
 cv2.circle(rotImg, tuple(yOrigPoints[:,0]), 2, (0, 255, 0))
 cv2.circle(rotImg, tuple(yOrigPoints[:,1]), 2, (0, 255, 0))
@@ -68,14 +72,36 @@ keypoints = [
     tuple(yPoints[:, 1]),
 ]
 
-print keypoints
+# Hough circle detection
 
+# set a low threshold (param2) so that we are guaranteed at least 1. Set a high minimum distance (1000)
+# so that we have at most 1
+circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 2, 1000, param1=30, param2=10, minRadius=10,
+                                   maxRadius=15)
+
+# virtually guaranteed one circle. raise an error otherwise
+circle = circles[0,0]
+circleCenter = circle[0:2]
+
+circle = np.around(circle)   # round for display only
+cv2.circle(origImg, (circle[0], circle[1]), circle[2], (0, 255, 0), 1)
+cv2.circle(origImg, (circle[0], circle[1]), 1, (0, 255, 0), 1)
+
+# calculate vector relative to centered base of eye
+pupilVector = circleCenter - eyeBase
+print 'pupilVector = ', pupilVector
+
+print keypoints
 for x in keypoints:
-    cv2.circle(img, x, 2, (0, 255, 0))
+    cv2.circle(origImg, x, 1, (255, 0, 0))
+
+
 
 
 plt.subplot(221), plt.imshow(img, cmap=cm.Greys_r)
 plt.subplot(222), plt.imshow(newImg)
 plt.subplot(223), plt.imshow(rotImg)
+plt.subplot(224), plt.imshow(origImg)
 
 plt.show()
+

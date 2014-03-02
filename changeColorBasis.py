@@ -45,6 +45,7 @@ resultGray = resultGray.T.reshape((img.shape[0], img.shape[1], 2))
 # resultGray = np.absolute(resultGray)
 resultGray = np.clip(resultGray,0,255)
 
+
 origImg[:,:,(0,2)] = origImg[:,:,(2,0)]
 plt.subplot(221), plt.imshow(origImg)
 plt.subplot(222), plt.imshow(cv2.cvtColor(origImg, cv2.cv.CV_BGR2GRAY),cmap=cm.Greys_r)
