@@ -1,10 +1,4 @@
-import numpy as np
-import cv2
-import sys
-import pdb
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-
+from imports import *
 
 if __name__ == "__main__":
 
@@ -33,9 +27,9 @@ if __name__ == "__main__":
     eyes = eye_cascade.detectMultiScale(roi_gray)
     print "Found eyes"
 
-    # take top 2 occurrences only
-    if len(eyes) > 2:
-        eyes = sorted(eyes, key=lambda e: e[1])[:2]
+
+    eyes = eyes[eyes[:,1].argsort()[:2]]  # take top 2 occurrences only
+    eyes = eyes[eyes[:,0].argsort()]  # sort by x-axis
 
     # blurImg = roi_gray
     blurImg = cv2.medianBlur(roi_gray, 3)
@@ -44,10 +38,10 @@ if __name__ == "__main__":
     eyeNum = 0
     eyeImage = np.zeros(( max(eyes[0][1], eyes[1][1]), eyes[0][0] + eyes[1][0], 3))
     for (ex, ey, ew, eh) in eyes:
-        ex += 3  # offset some
+
         eyeNum += 1
-
-
+        if eyeNum == 2:
+            ew+=15
         # detect pupils
         eye_gray = blurImg[ey:ey + eh, ex:ex + ew]
         eye_notblur = roi_color[ey:ey + eh, ex:ex + ew]
@@ -72,8 +66,6 @@ if __name__ == "__main__":
             for i in circles[0, :]:
                 cv2.circle(eye_color, (i[0], i[1]), i[2], (0, 255, 0), 1)
                 cv2.circle(eye_color, (i[0], i[1]), 2, (0, 0, 255), 1)
-
-
 
     # newImg = cv2.resize(image, (960, 540))
     # surf = cv2.SURF(400)

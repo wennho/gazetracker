@@ -1,10 +1,5 @@
-import numpy as np
-import cv2
-from matplotlib import pyplot as plt
-import matplotlib.cm as cm
-import sys
+from imports import *
 from util import rotate2d
-import pdb
 import math
 
 if len(sys.argv) < 2:
@@ -59,9 +54,7 @@ print keypoints
 for x in keypoints:
     cv2.circle(img, x, 2, (0, 255, 0))
 
-
-
-plt.subplot(121), plt.imshow(img)
+plt.subplot(121), plt.imshow(img, cmap=cm.Greys_r)
 plt.subplot(122), plt.imshow(newImg)
 # plt.subplot(223)
 
