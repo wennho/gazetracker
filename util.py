@@ -34,6 +34,16 @@ def rotZ(ang):
         [ 0,   0, 0, 1],
     ], dtype=float)
 
+def rotate2d(angle):
+    angRad = math.radians(angle)
+    c0 = math.cos(angRad)
+    s0 = math.sin(angRad)
+    return np.array([
+        [ c0, s0],
+        [-s0, c0],
+    ])
+
+
 def trans(t):
     T = np.eye(4, dtype=float)
     T[0:3, 3] = t

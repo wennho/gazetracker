@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 from matplotlib import pyplot as plt
 from util import *
+import pdb
 
 MIN_MATCH_COUNT = 2
 
@@ -14,6 +15,15 @@ surf = cv2.SURF()
 # find the keypoints and descriptors with SURF
 kp1, des1 = surf.detectAndCompute(inputImg, None)
 kp2, des2 = surf.detectAndCompute(trainImg, None)
+
+pdb.set_trace()
+
+inputImg = cv2.drawKeypoints(inputImg, kp1, None, (255, 0, 0), 4)
+trainImg = cv2.drawKeypoints(trainImg, kp2, None, (255, 0, 0), 4)
+
+plt.subplot(121), plt.imshow(inputImg)
+plt.subplot(122), plt.imshow(trainImg)
+plt.show()
 
 FLANN_INDEX_KDTREE = 0
 index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
@@ -64,8 +74,8 @@ newimg = np.zeros((nHeight, nWidth, 3), np.uint8)
 inputImg = cv2.cvtColor(inputImg, cv2.COLOR_GRAY2RGB)
 trainImg = cv2.cvtColor(trainImg, cv2.COLOR_GRAY2RGB)
 
-inputImg = cv2.drawKeypoints(inputImg, kp1, None, (255, 0, 0), 4)
-trainImg = cv2.drawKeypoints(trainImg, kp2, None, (255, 0, 0), 4)
+# inputImg = cv2.drawKeypoints(inputImg, kp1, None, (255, 0, 0), 4)
+# trainImg = cv2.drawKeypoints(trainImg, kp2, None, (255, 0, 0), 4)
 
 newimg[:h2, :w2] = trainImg
 newimg[:h1, w2:w1 + w2] = inputImg

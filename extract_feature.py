@@ -46,15 +46,16 @@ if __name__ == "__main__":
     for (ex, ey, ew, eh) in eyes:
         ex += 3  # offset some
         eyeNum += 1
-        cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
+
 
         # detect pupils
         eye_gray = blurImg[ey:ey + eh, ex:ex + ew]
-        eye_notblur = roi_gray[ey:ey + eh, ex:ex + ew]
+        eye_notblur = roi_color[ey:ey + eh, ex:ex + ew]
 
         if len(sys.argv) > 2:
             cv2.imwrite('testeye' + str(eyeNum) + '_' + sys.argv[2] + '.png', eye_notblur)
 
+        cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
         eye_color = roi_color[ey:ey + eh, ex:ex + ew]
 
         print np.min(eye_gray)
