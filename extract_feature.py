@@ -2,8 +2,8 @@ from imports import *
 from detectEyeShape import getEyeFeatures
 
 
-def features(image, verbose):
-    feat = []
+def extractFeatures(image, verbose):
+    feat = [1.]  # bias term
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
@@ -65,5 +65,5 @@ if __name__ == "__main__":
 
     imgFile = sys.argv[1]
     image = cv2.imread(imgFile)
-    feat = features(image, True)
+    feat = extractFeatures(image, True)
     print feat

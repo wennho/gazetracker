@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     state = 0
 
-    while True:
+    for loc in circleLoc:
 
         key = cv2.waitKey(10)
         cv2.imshow(WINDOW_NAME, canvas)
@@ -76,10 +76,7 @@ if __name__ == "__main__":
 
         state += 1
 
-        if state > len(circleLoc) - 1:
-            break
-
         canvas = np.copy(bgImg)
-        cv2.circle(canvas, circleLoc[state], 10, (0, 255, 0))
+        cv2.circle(canvas, loc, 10, (0, 255, 0))
 
     cv2.destroyAllWindows()
