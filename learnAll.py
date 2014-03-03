@@ -26,6 +26,7 @@ if __name__ == "__main__":
     # getFeatures()
 
     useScale = False
+    # usePCA = False
 
     data = np.load('featureData.npy')
 
@@ -51,52 +52,40 @@ if __name__ == "__main__":
 
         # if usePCA:
         #     pca = PCA()
-        #     pca.fit(data)
-        #     print pca.explained_variance_ratio_
-        #     data = pca.transform(data)
-        #     print data
+        #     pca.fit(trainData)
+        #     trainData = pca.transform(trainData)
         #     test = pca.transform(test)
 
         xLabel = trainCircleLoc[:, 0]
         yLabel = trainCircleLoc[:, 1]
 
-        if useScale:
-            xLabel, xScale = scale(xLabel)
-            yLabel, yScale = scale(yLabel)
-
         # train linear SVMs
-        y_svm = SVR(kernel='linear', C=1e3)
-        x_svm = SVR(kernel='linear', C=1e3)
+        eps = 50 if not useScale else 0.05
+        y_svm = SVR(kernel='linear', C=1e3, epsilon=eps)
+        x_svm = SVR(kernel='linear', C=1e3, epsilon=eps)
 
         x_class = x_svm.fit(trainData, xLabel)
-        # print 'finished training x-svm'
         y_class = y_svm.fit(trainData, yLabel)
-        # print 'finished training y-svm'
 
         xPredict = x_class.predict(trainData)
         yPredict = y_class.predict(trainData)
 
         predict = np.array(zip(xPredict, yPredict))
-
-        if useScale:
-            predict = np.array(zip(xPredict * xScale, yPredict * yScale))
-
-        # print predict
-
         distances = norm(predict - trainCircleLoc, axis=1)
         print '\ttrain error:', np.mean(distances)
+
+        # print predict
         # print distances
 
         testPredict = (x_class.predict(test), y_class.predict(test))
-        if useScale:
-            testPredict = (x_class.predict(test) * xScale, y_class.predict(test) * yScale)
         testPredict = np.array(testPredict)
         # print testPredict
         diff = testPredict.T - testLoc
         err = norm(diff)
         print '\ttest error:', err
         error.append(err)
-
+        # sys.exit()
 
     print 'average test error:', np.mean(error)
+    print 'median test error:', np.median(error)
 

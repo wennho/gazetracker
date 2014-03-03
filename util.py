@@ -78,10 +78,11 @@ def getProjection(rot_x, rot_y, rot_z, d, t):
 
 def scale(data):
     s = np.max(data)
-    return data / s, s
+    return data / float(s), s
 
 
 def scaleMatrix(data):
+    data = data.astype(float)
     for i in range(data.shape[1]):
         data[:, i], s = scale(data[:, i])
     return data
