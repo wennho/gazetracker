@@ -3,7 +3,8 @@ from detectEyeShape import getEyeFeatures
 
 
 def extractFeatures(image, verbose):
-    feat = [1.]  # bias term
+    featX = []  # bias term
+    featY = []
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
@@ -16,8 +17,6 @@ def extractFeatures(image, verbose):
 
     (x, y, w, h) = faces[0]
 
-    feat += [x, y]
-
     cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
     roi_gray = gray[y:y + h, x:x + w]
     roi_color = image[y:y + h, x:x + w]
@@ -29,8 +28,6 @@ def extractFeatures(image, verbose):
     eyeNum = 0
 
     for (ex, ey, ew, eh) in eyes:
-
-        feat.extend([ex, ey])
 
         eyeNum += 1
         if eyeNum == 2:
@@ -45,8 +42,11 @@ def extractFeatures(image, verbose):
         eyeGrayImg = roi_gray[ey:ey + eh, ex:ex + ew]
         eyeFeat = getEyeFeatures(eyeGrayImg, False)
 
-        for v in eyeFeat.itervalues():
-            feat.extend(v.tolist())
+        featX.append(eyeFeat['bottom'][0] + x + ex)
+        featY.append(eyeFeat['bottom'][1] + y + ey)
+
+        featX.append(eyeFeat['pupil'][0] - eyeFeat['bottom'][0])
+        featY.append(eyeFeat['pupil'][1] - eyeFeat['bottom'][1])
 
     roi_color = cv2.cvtColor(roi_color, cv2.COLOR_BGR2RGB)
 
@@ -54,7 +54,7 @@ def extractFeatures(image, verbose):
         plt.imshow(roi_color)
         plt.show()
 
-    return feat
+    return featX, featY
 
 
 if __name__ == "__main__":
@@ -65,5 +65,6 @@ if __name__ == "__main__":
 
     imgFile = sys.argv[1]
     image = cv2.imread(imgFile)
-    feat = extractFeatures(image, True)
-    print feat
+    featX, featY = extractFeatures(image, True)
+    print 'x features:', featX
+    print 'y features:', featY
