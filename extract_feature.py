@@ -45,8 +45,8 @@ def extractFeatures(image, verbose):
         featX.append(eyeFeat['bottom'][0] + x + ex)
         featY.append(eyeFeat['bottom'][1] + y + ey)
 
-        featX.append(eyeFeat['pupil'][0] - eyeFeat['bottom'][0])
-        featY.append(eyeFeat['pupil'][1] - eyeFeat['bottom'][1])
+        featX.append(eyeFeat['pupil'][0])
+        featY.append(eyeFeat['pupil'][1])
 
     roi_color = cv2.cvtColor(roi_color, cv2.COLOR_BGR2RGB)
 

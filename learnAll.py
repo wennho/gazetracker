@@ -28,7 +28,7 @@ def getFeatures():
 
 
 if __name__ == "__main__":
-    # getFeatures()
+    getFeatures()
 
     useScale = False
     # usePCA = False
@@ -99,6 +99,8 @@ if __name__ == "__main__":
         # print testPredict
         diff = testPredict.T - testLoc
         err = norm(diff)
+
+        print '\tdiff:', diff
         print '\ttest error:', err
         error.append(err)
         # sys.exit()

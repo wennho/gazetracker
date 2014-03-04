@@ -1,11 +1,13 @@
 from imports import *
 import math
+from calculateScreenFromPupil import calculateXprime
+
 
 def nothing(x):
     pass
 
-def getEyeFeatures(origImg, verbose):
 
+def getEyeFeatures(origImg, verbose):
     result = {}
     numLines = origImg.shape[0]
     startLine = int(numLines * 0.25)
@@ -61,7 +63,7 @@ def getEyeFeatures(origImg, verbose):
 
     # virtually guaranteed one circle. raise an error otherwise
     circle = circles[0, 0]
-    result['pupil'] = circle[0:2]
+    result['pupil'] = result['bottom'] - circle[0:2]
 
     if verbose:
 
