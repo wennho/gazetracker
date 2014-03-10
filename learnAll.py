@@ -9,14 +9,13 @@ from util import scale, scaleMatrix
 from sklearn.decomposition import PCA
 
 
-
 def getFeatures():
     dataX = []
     dataY = []
     for i in range(9):
         imgFile = 'calibrate_' + str(i) + '.png'
         image = cv2.imread(imgFile)
-        featX, featY = extractFeatures(image, False)
+        featX, featY = extractFeatures(image, i, False)
         dataX.append(featX)
         dataY.append(featY)
         print 'Finished processing image', i
@@ -29,7 +28,6 @@ def getFeatures():
 
 
 def crossValidate(dataX, dataY, eps, C, verbose):
-
     circleLoc = np.array(collect_calibrate.circleLoc)
 
     error = []
@@ -93,9 +91,9 @@ def crossValidate(dataX, dataY, eps, C, verbose):
 
     meanError = np.mean(error)
     medianError = np.median(error)
-
+    trainError = np.mean(trainError)
     if verbose:
-        print 'average train error:', np.mean(trainError)
+        print 'average train error:', trainError
         print 'average test error:', meanError
         print 'median test error:', medianError
 
@@ -119,46 +117,26 @@ if __name__ == "__main__":
         dataX = scaleMatrix(dataX)
         dataY = scaleMatrix(dataY)
 
-    eps = 1
-    C = 1e1
+    epsMin = 0.1
+    epsMax = 100
+    cMin = 1
+    cMax = 1000
     currErr = 1000
-    paramChanged = True
 
-    while paramChanged:
+    #grid search for best hyper-param
+    eps = epsMin
+    while eps < epsMax:
 
-        paramChanged = False
+        C = cMin
+        while C < cMax:
 
-        # test eps
-        newEps = eps * 1.1
-        trainError, meanError, medianError = crossValidate(dataX, dataY, newEps, C, False)
-        if medianError < currErr:
-            eps = newEps
-            paramChanged = True
-            currErr = medianError
-        else:
-            newEps = eps * 0.9
-            trainError, meanError, medianError = crossValidate(dataX, dataY, newEps, C, False)
+            trainError, meanError, medianError = crossValidate(dataX, dataY, eps, C, False)
             if medianError < currErr:
-                eps = newEps
-                paramChanged = True
                 currErr = medianError
-
-        # test C
-        newC = C * 1.1
-        trainError, meanError, medianError = crossValidate(dataX, dataY, eps, newC, False)
-        if medianError < currErr:
-            C = newC
-            paramChanged = True
-            currErr = medianError
-        else:
-            newC = C * 0.9
-            trainError, meanError, medianError = crossValidate(dataX, dataY, eps, newC, False)
-            if medianError < currErr:
-                C = newC
-                paramChanged = True
-                currErr = medianError
-
-        print 'medianError:', medianError
-        print 'meanError:', meanError
-        print 'C:', C
-        print 'eps:', eps
+                print 'trainError:', trainError
+                print 'medianError:', medianError
+                print 'meanError:', meanError
+                print 'C:', C
+                print 'eps:', eps
+            C *= 2
+        eps *= 2

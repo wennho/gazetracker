@@ -18,10 +18,15 @@ def getEyeFeatures(origImg, verbose):
     img = cv2.GaussianBlur(origImg, (0, 0), 1)
 
     # apply thresholding to get eye shape
-    newImg = np.zeros(img.shape)
-    newImg[img < 50] = 1
+    thresholdImg = np.zeros(img.shape)
+    thresholdImg[img < 55] = 150
 
-    index = np.vstack(newImg.nonzero()) # 2xM matrix
+    cannyBlurImg = cv2.GaussianBlur(origImg, (0, 0), 2)
+    highThreshold = 70
+    cannyEdges = cv2.Canny(cannyBlurImg, highThreshold * 0.5, highThreshold)
+    combined = cannyEdges * 0.5 + thresholdImg * 0.5
+
+    index = np.vstack(combined.nonzero()) # 2xM matrix
     index[(0, 1), :] = index[(1, 0), :]
     index = index[:, index[1].argsort()[::-1]]
     index = np.concatenate((index, np.ones((1, index.shape[1]), dtype=int)), axis=0)
@@ -58,8 +63,7 @@ def getEyeFeatures(origImg, verbose):
 
     # set a low threshold (param2) so that we are guaranteed at least 1. Set a high minimum distance (1000)
     # so that we have at most 1
-    img = cv2.GaussianBlur(img, (0, 0), 3)
-    circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 2, 1000, param1=30, param2=10, minRadius=10,
+    circles = cv2.HoughCircles(origImg, cv2.cv.CV_HOUGH_GRADIENT, 1, 1000, param1=50, param2=1, minRadius=10,
                                maxRadius=15)
 
     # virtually guaranteed one circle. raise an error otherwise
@@ -97,11 +101,12 @@ def getEyeFeatures(origImg, verbose):
             cv2.circle(origImg, x, 1, (255, 0, 0))
         print keypoints
 
-        plt.subplot(221), plt.imshow(img, cmap=cm.Greys_r)
-        plt.subplot(222), plt.imshow(newImg)
-        plt.subplot(223), plt.imshow(rotImg)
-        plt.subplot(224), plt.imshow(origImg)
-
+        plt.subplot(321), plt.imshow(img, cmap=cm.Greys_r)
+        plt.subplot(322), plt.imshow(combined)
+        plt.subplot(323), plt.imshow(cannyEdges)
+        plt.subplot(324), plt.imshow(cannyBlurImg, cmap=cm.Greys_r)
+        plt.subplot(325), plt.imshow(origImg)
+        plt.subplot(326), plt.hist(img.flatten(), bins=30)
         plt.show()
 
     return result

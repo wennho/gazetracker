@@ -2,7 +2,7 @@ from imports import *
 from detectEyeShape import getEyeFeatures
 
 
-def extractFeatures(image, verbose):
+def extractFeatures(image, imageNum, verbose):
     featX = []  # bias term
     featY = []
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
@@ -21,8 +21,8 @@ def extractFeatures(image, verbose):
     roi_gray = gray[y:y + h, x:x + w]
     roi_color = image[y:y + h, x:x + w]
     eyes = eye_cascade.detectMultiScale(roi_gray)
-
-    eyes = eyes[eyes[:, 1].argsort()[:2]]  # take top 2 occurrences only
+    indices = eyes[:, 1].argsort()[:2]
+    eyes = eyes[indices]  # take top 2 occurrences only
     eyes = eyes[eyes[:, 0].argsort()]  # sort by x-axis
 
     eyeNum = 0
@@ -33,9 +33,9 @@ def extractFeatures(image, verbose):
         if eyeNum == 2:
             ew += 15
 
-        if verbose and len(sys.argv) > 2:
-            eyeColorImg = roi_color[ey:ey + eh, ex:ex + ew]
-            cv2.imwrite('testeye' + str(eyeNum) + '_' + sys.argv[2] + '.png', eyeColorImg)
+        # if verbose and len(sys.argv) > 2:
+        # eyeColorImg = roi_color[ey:ey + eh, ex:ex + ew]
+        # cv2.imwrite('testeye' + str(eyeNum) + '_' + str(imageNum) + '.png', eyeColorImg)
 
         cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
@@ -59,12 +59,12 @@ def extractFeatures(image, verbose):
 
 if __name__ == "__main__":
 
-    if len(sys.argv) < 2:
-        print 'Usage: python ' + __file__ + ' <image>'
+    if len(sys.argv) < 3:
+        print 'Usage: python ' + __file__ + ' <image> <imageNum>'
         sys.exit()
 
     imgFile = sys.argv[1]
     image = cv2.imread(imgFile)
-    featX, featY = extractFeatures(image, True)
+    featX, featY = extractFeatures(image, int(sys.argv[2]), True)
     print 'x features:', featX
     print 'y features:', featY
