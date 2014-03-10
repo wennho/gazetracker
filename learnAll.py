@@ -2,11 +2,12 @@ from imports import *
 from extract_feature import extractFeatures
 from sklearn.svm import SVR
 from sklearn import cross_validation
-from collect_calibrate import circleLoc
+import collect_calibrate
 from numpy.linalg import norm
 from sklearn.preprocessing import normalize
 from util import scale, scaleMatrix
 from sklearn.decomposition import PCA
+
 
 
 def getFeatures():
@@ -27,24 +28,9 @@ def getFeatures():
     print 'saved data'
 
 
-if __name__ == "__main__":
-    getFeatures()
+def crossValidate(dataX, dataY, eps, C, verbose):
 
-    useScale = False
-    # usePCA = False
-
-    dataX = np.load('featureDataX.npy')
-    dataY = np.load('featureDataY.npy')
-
-    # combine to provide higher dimensions
-    dataX = np.hstack((dataX, dataY))
-    dataY = dataX
-
-    if useScale:
-        dataX = scaleMatrix(dataX)
-        dataY = scaleMatrix(dataY)
-
-    circleLoc = np.array(circleLoc)
+    circleLoc = np.array(collect_calibrate.circleLoc)
 
     error = []
     trainError = []
@@ -52,7 +38,8 @@ if __name__ == "__main__":
     # using leave-one-out validation
     N = dataX.shape[0]
     for i in range(N):
-        print 'in iteration', i
+        if verbose:
+            print 'in iteration', i
         select = np.ones((N,), dtype=bool)
         select[i] = False
 
@@ -75,9 +62,8 @@ if __name__ == "__main__":
         yLabel = trainCircleLoc[:, 1]
 
         # train linear SVMs
-        eps = 1 if not useScale else 0.05  # impt to tweak epsilon as features change
-        y_svm = SVR(kernel='linear', C=1e3, epsilon=eps)
-        x_svm = SVR(kernel='linear', C=1e3, epsilon=eps)
+        y_svm = SVR(kernel='linear', C=C, epsilon=eps)
+        x_svm = SVR(kernel='linear', C=C, epsilon=eps)
 
         x_class = x_svm.fit(trainDataX, xLabel)
         y_class = y_svm.fit(trainDataY, yLabel)
@@ -89,7 +75,6 @@ if __name__ == "__main__":
         distances = norm(predict - trainCircleLoc, axis=1)
         trainErr = np.mean(distances)
         trainError.append(trainErr)
-        print '\ttrain error:', trainErr
 
         # print predict
         # print distances
@@ -99,13 +84,81 @@ if __name__ == "__main__":
         # print testPredict
         diff = testPredict.T - testLoc
         err = norm(diff)
-
-        print '\tdiff:', diff
-        print '\ttest error:', err
+        if verbose:
+            print '\ttrain error:', trainErr
+            print '\tdiff:', diff
+            print '\ttest error:', err
         error.append(err)
         # sys.exit()
 
-    print 'average train error:', np.mean(trainError)
-    print 'average test error:', np.mean(error)
-    print 'median test error:', np.median(error)
+    meanError = np.mean(error)
+    medianError = np.median(error)
 
+    if verbose:
+        print 'average train error:', np.mean(trainError)
+        print 'average test error:', meanError
+        print 'median test error:', medianError
+
+    return trainError, meanError, medianError
+
+
+if __name__ == "__main__":
+    # getFeatures()
+
+    useScale = False
+    # usePCA = False
+
+    dataX = np.load('featureDataX.npy')
+    dataY = np.load('featureDataY.npy')
+
+    # combine to provide higher dimensions
+    dataX = np.hstack((dataX, dataY))
+    dataY = dataX
+
+    if useScale:
+        dataX = scaleMatrix(dataX)
+        dataY = scaleMatrix(dataY)
+
+    eps = 1
+    C = 1e1
+    currErr = 1000
+    paramChanged = True
+
+    while paramChanged:
+
+        paramChanged = False
+
+        # test eps
+        newEps = eps * 1.1
+        trainError, meanError, medianError = crossValidate(dataX, dataY, newEps, C, False)
+        if medianError < currErr:
+            eps = newEps
+            paramChanged = True
+            currErr = medianError
+        else:
+            newEps = eps * 0.9
+            trainError, meanError, medianError = crossValidate(dataX, dataY, newEps, C, False)
+            if medianError < currErr:
+                eps = newEps
+                paramChanged = True
+                currErr = medianError
+
+        # test C
+        newC = C * 1.1
+        trainError, meanError, medianError = crossValidate(dataX, dataY, eps, newC, False)
+        if medianError < currErr:
+            C = newC
+            paramChanged = True
+            currErr = medianError
+        else:
+            newC = C * 0.9
+            trainError, meanError, medianError = crossValidate(dataX, dataY, eps, newC, False)
+            if medianError < currErr:
+                C = newC
+                paramChanged = True
+                currErr = medianError
+
+        print 'medianError:', medianError
+        print 'meanError:', meanError
+        print 'C:', C
+        print 'eps:', eps

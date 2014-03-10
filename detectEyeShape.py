@@ -19,7 +19,7 @@ def getEyeFeatures(origImg, verbose):
 
     # apply thresholding to get eye shape
     newImg = np.zeros(img.shape)
-    newImg[img < 44] = 1
+    newImg[img < 50] = 1
 
     index = np.vstack(newImg.nonzero()) # 2xM matrix
     index[(0, 1), :] = index[(1, 0), :]
@@ -58,6 +58,7 @@ def getEyeFeatures(origImg, verbose):
 
     # set a low threshold (param2) so that we are guaranteed at least 1. Set a high minimum distance (1000)
     # so that we have at most 1
+    img = cv2.GaussianBlur(img, (0, 0), 3)
     circles = cv2.HoughCircles(img, cv2.cv.CV_HOUGH_GRADIENT, 2, 1000, param1=30, param2=10, minRadius=10,
                                maxRadius=15)
 
