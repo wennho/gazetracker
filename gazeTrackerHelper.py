@@ -15,11 +15,11 @@ def getAndDrawHoughEye(image, template, posTuple):
     grayEye = cv2.cvtColor(image[yMin:yMax, xMin:xMax], cv2.COLOR_BGR2GRAY)
     offset = eyeHough(grayEye, template)
     offset += np.array([xMin, yMin])
-    botRight = offset + template['origin'][::-1] + np.array([5, 5])
+    botRight = offset + template['origin'][::-1] + np.array([5, 10])
     posTuple = (
         (
             offset[0] + template['left'][0] - 5,
-            offset[1] + template['top'][1] - 10,
+            offset[1] + template['top'][1] - 5,
         ),
         tuple(botRight)
     )

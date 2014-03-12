@@ -1,4 +1,5 @@
 from gazeTrackerHelper import *
+from random import randint
 from learnAll import learn
 
 if __name__ == "__main__":
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     result = getEyeTrackTemplate(cap, templateLeft, templateRight)
 
     calibrating = True
+    isInitialCalibrate = True
     displayCapture = False
     calibrateState = 0
     framesSkipped = 0
@@ -23,6 +25,8 @@ if __name__ == "__main__":
     svmResult = None
     captureRight = None
     captureLeft = None
+    labels = None
+    calibrateTarget = circleLoc[calibrateState]
     while True:
 
 
@@ -56,17 +60,16 @@ if __name__ == "__main__":
         data = np.hstack((houghLeft['features'], houghRight['features']))
 
         if calibrating:
-            cv2.circle(image, circleLoc[calibrateState], 10, (0, 255, 0))
+            cv2.circle(image, calibrateTarget, 10, (0, 255, 255), 3)
             if displayCapture:
                 image[50:50 + captureLeft.shape[0], 1500:1500 + captureLeft.shape[1]] = captureLeft
                 image[200:200 + captureRight.shape[0], 1500:1500 + captureRight.shape[1]] = captureRight
-
 
         elif svmResult:
             # make prediction
             x = svmResult['xSVM'].predict(data)
             y = svmResult['ySVM'].predict(data)
-            print (x, y)
+            cv2.putText(image, str((int(x), int(y))), (100, 900), font, 1, (255, 255, 255), 2, cv2.CV_AA)
             cv2.circle(image, (x, y), 10, (255, 0, 0))
 
         cv2.imshow(WINDOW_NAME, image)
@@ -74,22 +77,42 @@ if __name__ == "__main__":
         key = cv2.waitKey(10)
 
         if isKey(key, 'enter'):
+            print calibrateState
             if calibrating and displayCapture:
                 displayCapture = False
 
-                # add results to calibration
-                calibrateData[calibrateState] = data
-                calibrateState += 1
+                # add results to calibration, set next target
+                if isInitialCalibrate:
+                    calibrateData[calibrateState] = data
+                    calibrateState += 1
+                    if calibrateState <= 8:
+                        calibrateTarget = circleLoc[calibrateState]
+                else:
+                    calibrateData = np.vstack((calibrateData, data))
+                    calibrateState += 1
+                    labels = np.vstack((labels, np.array(calibrateTarget)))
+                    calibrateTarget = randint(20, 1900), randint(20, 1060)
 
-                if calibrateState >= 9:  # finished calibration
+                if isInitialCalibrate and calibrateState >= 9:  # finished calibration
                     calibrating = False
-                    svmResult = learn(calibrateData, calibrateData)
+                    isInitialCalibrate = False
+                    labels = np.array(circleLoc)
+                    svmResult = learn(calibrateData, calibrateData, labels / 100.)
+                elif not isInitialCalibrate and calibrateState >= 5:
+                    calibrating = False
+                    print calibrateData
+                    print labels
+                    svmResult = learn(calibrateData, calibrateData, labels / 100.)
             elif calibrating:
                 displayCapture = True
                 (xMin, yMin), (xMax, yMax) = result['eyeLeft']
                 captureLeft = image[yMin:yMax, xMin:xMax]
                 (xMin, yMin), (xMax, yMax) = result['eyeRight']
                 captureRight = image[yMin:yMax, xMin:xMax]
+            else:
+                calibrating = True
+                calibrateTarget = randint(20, 1900), randint(20, 1060)
+                calibrateState = 0
         elif isKey(key, 'esc'):
             break
         elif isKey(key, 'space'):

@@ -26,8 +26,8 @@ def getFeatures(writeImg):
     print 'saved data'
 
 
-def crossValidate(dataX, dataY, eps, C, verbose):
-    circleLoc = np.array(collect_calibrate.circleLoc)
+def crossValidate(dataX, dataY, labels, eps, C, verbose):
+
 
     error = []
     trainError = []
@@ -42,12 +42,12 @@ def crossValidate(dataX, dataY, eps, C, verbose):
 
         testX = dataX[i]
         testY = dataY[i]
-        testLoc = circleLoc[i]
+        testLoc = labels[i]
 
         trainDataX = dataX[select]
         trainDataY = dataY[select]
 
-        trainCircleLoc = circleLoc[select]
+        trainCircleLoc = labels[select]
 
         # if usePCA:
         #     pca = PCA()
@@ -98,8 +98,8 @@ def crossValidate(dataX, dataY, eps, C, verbose):
 
     y_svm = SVR(kernel='linear', C=C, epsilon=eps)
     x_svm = SVR(kernel='linear', C=C, epsilon=eps)
-    xSVM = x_svm.fit(dataX, circleLoc[:, 0])
-    ySVM = y_svm.fit(dataY, circleLoc[:, 1])
+    xSVM = x_svm.fit(dataX, labels[:, 0])
+    ySVM = y_svm.fit(dataY, labels[:, 1])
 
     return {
         'trainErr': trainError,
@@ -113,7 +113,7 @@ def crossValidate(dataX, dataY, eps, C, verbose):
 
 
 
-def learn(dataX, dataY):
+def learn(dataX, dataY, labels):
 
     epsMin = 0.1
     epsMax = 100
@@ -129,7 +129,7 @@ def learn(dataX, dataY):
         C = cMin
         while C < cMax:
 
-            result = crossValidate(dataX, dataY, eps, C, False)
+            result = crossValidate(dataX, dataY, labels, eps, C, False)
             if result['medianErr'] < bestResult['medianErr']:
                 bestResult = result
                 print 'trainError:', result['trainErr']
