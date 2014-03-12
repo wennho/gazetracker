@@ -24,8 +24,8 @@ def getAndDrawHoughEye(image, template, posTuple):
         tuple(botRight)
     )
 
-    circle = getHoughCircle(grayEye)
-    circle = np.around(circle + np.array([xMin, yMin, 0])).astype(int)   # round for display only
+    circleOrig = getHoughCircle(grayEye)
+    circle = np.around(circleOrig + np.array([xMin, yMin, 0])).astype(int)   # round for display only
 
     cv2.circle(image, (circle[0], circle[1]), circle[2], (0, 255, 0), 1)
     cv2.circle(image, (circle[0], circle[1]), 1, (0, 255, 0), 1)
@@ -55,6 +55,7 @@ def getEyeTrackTemplate(cap, templateLeft, templateRight):
         for i in range(5):
             ret, image = cap.read()
 
+        image = cv2.flip(image, 1)
         result = getEyeFacePos(image, face_cascade, eye_cascade)
         if not result:
             continue
@@ -73,6 +74,11 @@ def getEyeTrackTemplate(cap, templateLeft, templateRight):
         cv2.rectangle(image, result['eyeRight'][0], result['eyeRight'][1], (0, 255, 0), 1)
 
         cv2.imshow(WINDOW_NAME, image)
+
+        result['initPos'] = (
+            result['eyeLeft'][0][0] + result['eyeRight'][0][0],
+            result['eyeLeft'][0][1] + result['eyeRight'][0][1],
+        )
 
         while not haveEyeFacePos:
             key = cv2.waitKey(100)

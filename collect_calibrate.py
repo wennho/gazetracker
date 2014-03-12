@@ -12,9 +12,9 @@ circleLoc = [
     (SCREEN_SIZE[0] - pd, pd),
 
     # middle row
-    (SCREEN_SIZE[0] - pd, SCREEN_SIZE[1] / 2),
-    (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2),
     (pd, SCREEN_SIZE[1] / 2),
+    (SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2),
+    (SCREEN_SIZE[0] - pd, SCREEN_SIZE[1] / 2),
 
     # bottom row
     (pd, SCREEN_SIZE[1] - pd),

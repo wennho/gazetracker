@@ -21,12 +21,16 @@ if __name__ == "__main__":
     calibrateState = 0
     framesSkipped = 0
 
+    # calibrateData = np.zeros((9, 2))
     calibrateData = np.zeros((9, 4))
     svmResult = None
     captureRight = None
     captureLeft = None
     labels = None
     calibrateTarget = circleLoc[calibrateState]
+
+    x = 960
+    y = 540
     while True:
 
 
@@ -36,21 +40,7 @@ if __name__ == "__main__":
             framesSkipped += 1
             continue
 
-        # do all processing here
-
-
-        # featX, featY = extractFeatures(image, -1, False)
-        # features = np.hstack((featX, featY))
-        # xOrig = xSVM.predict(features);
-        # x = np.clip(xOrig, 0, 1920)
-        # yOrig = ySVM.predict(features)
-        # y = np.clip(yOrig, 0, 1080)
-        # predict = (x, y)
-        # print (xOrig[0], yOrig[0])
-        # cv2.circle(image, predict, 10, (0, 255, 0))
-
-        # featX, featY = extractFeatures(image, face_cascade, eye_cascade, False)
-
+        image = cv2.flip(image, 1)
 
         # draw rectangles around eyes
         houghLeft = getAndDrawHoughEye(image, templateLeft, result['eyeLeft'])
@@ -58,6 +48,13 @@ if __name__ == "__main__":
         houghRight = getAndDrawHoughEye(image, templateRight, result['eyeRight'])
         result['eyeRight'] = houghRight['posTuple']
         data = np.hstack((houghLeft['features'], houghRight['features']))
+
+        data = np.array([
+            data[0] + result['eyeLeft'][0][0],
+            data[2] + result['eyeRight'][0][0],
+            data[1] + result['eyeLeft'][0][1],
+            data[3] + result['eyeRight'][0][1],
+        ])
 
         if calibrating:
             cv2.circle(image, calibrateTarget, 10, (0, 255, 255), 3)
@@ -67,8 +64,14 @@ if __name__ == "__main__":
 
         elif svmResult:
             # make prediction
-            x = svmResult['xSVM'].predict(data)
-            y = svmResult['ySVM'].predict(data)
+            # x = svmResult['xSVM'].predict(data)
+            # y = svmResult['ySVM'].predict(data)
+            newX = svmResult['xSVM'].predict(data[0:2])
+            newY = svmResult['ySVM'].predict(data[2:4])
+
+            x = int(x * 0.7 + newX * 0.3)
+            y = int(y * 0.7 + newY * 0.3)
+            
             cv2.putText(image, str((int(x), int(y))), (100, 900), font, 1, (255, 255, 255), 2, cv2.CV_AA)
             cv2.circle(image, (x, y), 10, (255, 0, 0))
 
@@ -97,12 +100,13 @@ if __name__ == "__main__":
                     calibrating = False
                     isInitialCalibrate = False
                     labels = np.array(circleLoc)
-                    svmResult = learn(calibrateData, calibrateData, labels / 100.)
+                    # svmResult = learn(calibrateData, calibrateData, labels)
+                    svmResult = learn(calibrateData[:, 0:2], calibrateData[:, 2:4], labels)
                 elif not isInitialCalibrate and calibrateState >= 5:
                     calibrating = False
                     print calibrateData
                     print labels
-                    svmResult = learn(calibrateData, calibrateData, labels / 100.)
+                    svmResult = learn(calibrateData[:, 0:2], calibrateData[:, 2:4], labels)
             elif calibrating:
                 displayCapture = True
                 (xMin, yMin), (xMax, yMax) = result['eyeLeft']

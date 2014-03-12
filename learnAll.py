@@ -7,6 +7,7 @@ from util import scale, scaleMatrix
 from sklearn.decomposition import PCA
 import pickle
 
+KERNEL = 'linear'
 
 def getFeatures(writeImg):
     dataX = []
@@ -59,8 +60,8 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
         yLabel = trainCircleLoc[:, 1]
 
         # train linear SVMs
-        y_svm = SVR(kernel='linear', C=C, epsilon=eps)
-        x_svm = SVR(kernel='linear', C=C, epsilon=eps)
+        y_svm = SVR(kernel=KERNEL, C=C, epsilon=eps)
+        x_svm = SVR(kernel=KERNEL, C=C, epsilon=eps)
 
         x_class = x_svm.fit(trainDataX, xLabel)
         y_class = y_svm.fit(trainDataY, yLabel)
@@ -96,8 +97,8 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
         print 'average test error:', meanError
         print 'median test error:', medianError
 
-    y_svm = SVR(kernel='linear', C=C, epsilon=eps)
-    x_svm = SVR(kernel='linear', C=C, epsilon=eps)
+    y_svm = SVR(kernel=KERNEL, C=C, epsilon=eps)
+    x_svm = SVR(kernel=KERNEL, C=C, epsilon=eps)
     xSVM = x_svm.fit(dataX, labels[:, 0])
     ySVM = y_svm.fit(dataY, labels[:, 1])
 
@@ -116,14 +117,13 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
 def learn(dataX, dataY, labels):
 
     epsMin = 0.1
-    epsMax = 100
+    epsMax = 10
     cMin = 1
     cMax = 1000
 
-
     #grid search for best hyper-param
     eps = epsMin
-    bestResult = {'medianErr': 1000}
+    bestResult = {'medianErr': 10000}
     while eps < epsMax:
 
         C = cMin
@@ -145,7 +145,7 @@ def learn(dataX, dataY, labels):
 
 
 if __name__ == "__main__":
-    getFeatures(True)
+    # getFeatures(True)
 
     useScale = False
     # usePCA = False
@@ -161,6 +161,6 @@ if __name__ == "__main__":
         dataX = scaleMatrix(dataX)
         dataY = scaleMatrix(dataY)
 
-    bestResult = learn(dataX, dataY)
+    bestResult = learn(dataX, dataY, np.array(collect_calibrate.circleLoc))
 
     pickle.dump(bestResult, open('learnResult.pickle', 'wb'))

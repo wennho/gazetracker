@@ -18,6 +18,9 @@ def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
     roi_gray = gray[y:y + h, x:x + w]
 
     eyes = eye_cascade.detectMultiScale(roi_gray)
+    if len(eyes) < 2 or isinstance(eyes[0], (int,long,float)):
+        return None
+
     indices = eyes[:, 1].argsort()[:2]
     eyes = eyes[indices]  # take top 2 occurrences only
     eyes = eyes[eyes[:, 0].argsort()]  # sort by x-axis

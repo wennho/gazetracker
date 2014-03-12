@@ -11,6 +11,8 @@ def getHoughCircle(origGrayImg):
                                maxRadius=15)
 
     # virtually guaranteed one circle. raise an error otherwise
+    if circles is None:
+        return np.array([0, 0, 1])
     circle = circles[0, 0]
 
     return circle
