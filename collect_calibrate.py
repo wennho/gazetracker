@@ -29,6 +29,8 @@ def isKey(num, keyString):
         return num == 1113997 or num == 1048586
     elif keyString == 'esc':
         return num == 1048603
+    elif keyString == 'space':
+        return num == 1048608
 
     return True
 
