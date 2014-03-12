@@ -2,7 +2,6 @@ import numpy as np
 import cv2
 
 
-CAMERA_INDEX = 0
 SCREEN_SIZE = (1920, 1080)
 
 pd = 50  # padding

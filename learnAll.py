@@ -112,22 +112,8 @@ def crossValidate(dataX, dataY, eps, C, verbose):
     }
 
 
-if __name__ == "__main__":
-    getFeatures(True)
 
-    useScale = False
-    # usePCA = False
-
-    dataX = np.load('featureDataX.npy')
-    dataY = np.load('featureDataY.npy')
-
-    # combine to provide higher dimensions
-    dataX = np.hstack((dataX, dataY))
-    dataY = dataX
-
-    if useScale:
-        dataX = scaleMatrix(dataX)
-        dataY = scaleMatrix(dataY)
+def learn(dataX, dataY):
 
     epsMin = 0.1
     epsMax = 100
@@ -153,5 +139,28 @@ if __name__ == "__main__":
                 print 'eps:', eps
             C *= 2
         eps *= 2
+
+    return bestResult
+
+
+
+if __name__ == "__main__":
+    getFeatures(True)
+
+    useScale = False
+    # usePCA = False
+
+    dataX = np.load('featureDataX.npy')
+    dataY = np.load('featureDataY.npy')
+
+    # combine to provide higher dimensions
+    dataX = np.hstack((dataX, dataY))
+    dataY = dataX
+
+    if useScale:
+        dataX = scaleMatrix(dataX)
+        dataY = scaleMatrix(dataY)
+
+    bestResult = learn(dataX, dataY)
 
     pickle.dump(bestResult, open('learnResult.pickle', 'wb'))
