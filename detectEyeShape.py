@@ -3,11 +3,7 @@ import math
 from calculateScreenFromPupil import calculateXprime
 
 
-def nothing(x):
-    pass
-
-
-def getEyeFeatures(origImg, verbose):
+def getEyeFeatures(origImg, verbose, imgTup=None):
     result = {}
     numLines = origImg.shape[0]
     startLine = int(numLines * 0.25)
@@ -22,11 +18,14 @@ def getEyeFeatures(origImg, verbose):
     thresholdImg[img < 55] = 150
 
     cannyBlurImg = cv2.GaussianBlur(origImg, (0, 0), 2)
-    highThreshold = 70
-    cannyEdges = cv2.Canny(cannyBlurImg, highThreshold * 0.5, highThreshold)
-    combined = cannyEdges * 0.5 + thresholdImg * 0.5
+    highThreshold = 60
+    cannyEdges = cv2.Canny(origImg, highThreshold * 0.5, highThreshold)
+    thresholdImg[cannyEdges > 0] = 255
 
-    index = np.vstack(combined.nonzero()) # 2xM matrix
+    if imgTup:
+        cv2.imwrite('testeyeoutline' + imgTup[0] + '_' + imgTup[1] + '.png', cannyEdges)
+
+    index = np.vstack(thresholdImg.nonzero()) # 2xM matrix
     index[(0, 1), :] = index[(1, 0), :]
     index = index[:, index[1].argsort()[::-1]]
     index = np.concatenate((index, np.ones((1, index.shape[1]), dtype=int)), axis=0)
@@ -102,7 +101,7 @@ def getEyeFeatures(origImg, verbose):
         print keypoints
 
         plt.subplot(321), plt.imshow(img, cmap=cm.Greys_r)
-        plt.subplot(322), plt.imshow(combined)
+        plt.subplot(322), plt.imshow(thresholdImg)
         plt.subplot(323), plt.imshow(cannyEdges)
         plt.subplot(324), plt.imshow(cannyBlurImg, cmap=cm.Greys_r)
         plt.subplot(325), plt.imshow(origImg)

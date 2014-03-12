@@ -2,8 +2,8 @@ from imports import *
 from detectEyeShape import getEyeFeatures
 
 
-def extractFeatures(image, imageNum, verbose):
-    featX = []  # bias term
+def extractFeatures(image, imageNum, verbose, writeImg):
+    featX = []
     featY = []
     face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
@@ -33,17 +33,17 @@ def extractFeatures(image, imageNum, verbose):
         if eyeNum == 2:
             ew += 15
 
-        # if verbose and len(sys.argv) > 2:
-        # eyeColorImg = roi_color[ey:ey + eh, ex:ex + ew]
-        # cv2.imwrite('testeye' + str(eyeNum) + '_' + str(imageNum) + '.png', eyeColorImg)
+        if writeImg:
+            eyeColorImg = roi_color[ey:ey + eh, ex:ex + ew]
+            cv2.imwrite('testeye' + str(eyeNum) + '_' + str(imageNum) + '.png', eyeColorImg)
 
         cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
 
         eyeGrayImg = roi_gray[ey:ey + eh, ex:ex + ew]
         eyeFeat = getEyeFeatures(eyeGrayImg, False)
 
-        featX.append(eyeFeat['bottom'][0] + x + ex)
-        featY.append(eyeFeat['bottom'][1] + y + ey)
+        # featX.append(eyeFeat['bottom'][0] + x + ex)
+        # featY.append(eyeFeat['bottom'][1] + y + ey)
 
         featX.append(eyeFeat['pupil'][0])
         featY.append(eyeFeat['pupil'][1])

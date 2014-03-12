@@ -1,21 +1,20 @@
 from imports import *
 from extract_feature import extractFeatures
 from sklearn.svm import SVR
-from sklearn import cross_validation
 import collect_calibrate
 from numpy.linalg import norm
-from sklearn.preprocessing import normalize
 from util import scale, scaleMatrix
 from sklearn.decomposition import PCA
+import pickle
 
 
-def getFeatures():
+def getFeatures(writeImg):
     dataX = []
     dataY = []
     for i in range(9):
         imgFile = 'calibrate_' + str(i) + '.png'
         image = cv2.imread(imgFile)
-        featX, featY = extractFeatures(image, i, False)
+        featX, featY = extractFeatures(image, i, False, writeImg)
         dataX.append(featX)
         dataY.append(featY)
         print 'Finished processing image', i
@@ -97,11 +96,24 @@ def crossValidate(dataX, dataY, eps, C, verbose):
         print 'average test error:', meanError
         print 'median test error:', medianError
 
-    return trainError, meanError, medianError
+    y_svm = SVR(kernel='linear', C=C, epsilon=eps)
+    x_svm = SVR(kernel='linear', C=C, epsilon=eps)
+    xSVM = x_svm.fit(dataX, circleLoc[:, 0])
+    ySVM = y_svm.fit(dataY, circleLoc[:, 1])
+
+    return {
+        'trainErr': trainError,
+        'meanErr': meanError,
+        'medianErr': medianError,
+        'xSVM': xSVM,
+        'ySVM': ySVM,
+        'C': C,
+        'eps': eps,
+    }
 
 
 if __name__ == "__main__":
-    # getFeatures()
+    getFeatures(True)
 
     useScale = False
     # usePCA = False
@@ -121,22 +133,25 @@ if __name__ == "__main__":
     epsMax = 100
     cMin = 1
     cMax = 1000
-    currErr = 1000
+
 
     #grid search for best hyper-param
     eps = epsMin
+    bestResult = {'medianErr': 1000}
     while eps < epsMax:
 
         C = cMin
         while C < cMax:
 
-            trainError, meanError, medianError = crossValidate(dataX, dataY, eps, C, False)
-            if medianError < currErr:
-                currErr = medianError
-                print 'trainError:', trainError
-                print 'medianError:', medianError
-                print 'meanError:', meanError
+            result = crossValidate(dataX, dataY, eps, C, False)
+            if result['medianErr'] < bestResult['medianErr']:
+                bestResult = result
+                print 'trainError:', result['trainErr']
+                print 'medianError:', result['medianErr']
+                print 'meanError:', result['meanErr']
                 print 'C:', C
                 print 'eps:', eps
             C *= 2
         eps *= 2
+
+    pickle.dump(bestResult, open('learnResult.pickle', 'wb'))
