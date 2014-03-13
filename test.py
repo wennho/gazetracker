@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 from subprocess import check_call
+import pdb
 
 cap = cv2.VideoCapture(0)
 # print cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
@@ -13,6 +14,9 @@ cap.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT, 480)
 print cap.get(cv2.cv.CV_CAP_PROP_FRAME_WIDTH)
 print cap.get(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT)
 
+out = cv2.VideoWriter('output.avi', cv2.cv.FOURCC('M','J','P','G'), 20, (1920, 1080), True)
+out.open('output.avi', cv2.cv.FOURCC('M','J','P','G'), 20, (1920, 1080), True)
+# pdb.set_trace()
 while (True):
     # Capture frame-by-frame
     ret, frame = cap.read()
@@ -22,10 +26,11 @@ while (True):
 
     # Display the resulting frame
     cv2.imshow('frame', gray)
-
-    key = cv2.waitKey(10)
-    if key != -1:
-        print key
+    out.write(frame)
+    #
+    # key = cv2.waitKey(10)
+    # if key != -1:
+    #     print key
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -33,3 +38,4 @@ while (True):
 # When everything done, release the capture
 cap.release()
 cv2.destroyAllWindows()
+out.release()

@@ -18,7 +18,7 @@ def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
     roi_gray = gray[y:y + h, x:x + w]
 
     eyes = eye_cascade.detectMultiScale(roi_gray)
-    if len(eyes) < 2 or isinstance(eyes[0], (int,long,float)):
+    if len(eyes) < 2 or isinstance(eyes[0], (int, long, float)):
         return None
 
     indices = eyes[:, 1].argsort()[:2]
@@ -41,6 +41,11 @@ def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
 
         eyeName = 'eyeLeft' if eyeNum == 1 else 'eyeRight'
         result[eyeName] = ((ex + x, int(ey + y + eh * 0.15)), (ex + x + ew, int(ey + y + eh * .85)))
+
+    # guesstimate nose position
+    x = (result['eyeLeft'][0][0] + result['eyeRight'][1][0]) / 2
+    y = (result['eyeLeft'][0][1] + result['eyeRight'][1][1]) / 2 + 80
+    result['nose'] = ((x - 50, y - 30), (x + 50, y + 30))
 
     return result
 

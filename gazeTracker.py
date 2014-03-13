@@ -1,10 +1,17 @@
 from gazeTrackerHelper import *
 from random import randint
 from learnAll import learn
+from noseHough import getNoseTemplate
 
 if __name__ == "__main__":
 
     # load all needed stuff
+
+    record = True
+
+    if record:
+
+        out = cv2.VideoWriter('output.avi',-1, 20, (640,480), True)
 
     cap = cv2.VideoCapture(0)
     cv2.namedWindow(WINDOW_NAME, 0)
@@ -12,8 +19,9 @@ if __name__ == "__main__":
 
     templateLeft = getLeftEyeTemplate()
     templateRight = getRightEyeTemplate()
+    templateNose = getNoseTemplate()
 
-    result = getEyeTrackTemplate(cap, templateLeft, templateRight)
+    result = getEyeTrackTemplate(cap, templateLeft, templateRight, templateNose)
 
     calibrating = True
     isInitialCalibrate = True
@@ -43,11 +51,14 @@ if __name__ == "__main__":
         image = cv2.flip(image, 1)
 
         # draw rectangles around eyes
-        houghLeft = getAndDrawHoughEye(image, templateLeft, result['eyeLeft'])
+        houghLeft = getAndDrawHough(image, templateLeft, result['eyeLeft'])
         result['eyeLeft'] = houghLeft['posTuple']
-        houghRight = getAndDrawHoughEye(image, templateRight, result['eyeRight'])
+        houghRight = getAndDrawHough(image, templateRight, result['eyeRight'])
         result['eyeRight'] = houghRight['posTuple']
         data = np.hstack((houghLeft['features'], houghRight['features']))
+
+        houghNose = getAndDrawHough(image, templateNose, result['nose'])
+        result['nose'] = houghNose['posTuple']
 
         data = np.array([
             data[0] + result['eyeLeft'][0][0],
@@ -71,11 +82,14 @@ if __name__ == "__main__":
 
             x = int(x * 0.7 + newX * 0.3)
             y = int(y * 0.7 + newY * 0.3)
-            
+
             cv2.putText(image, str((int(x), int(y))), (100, 900), font, 1, (255, 255, 255), 2, cv2.CV_AA)
-            cv2.circle(image, (x, y), 10, (255, 0, 0))
+            cv2.circle(image, (x, y), 10, (255, 0, 0),3)
 
         cv2.imshow(WINDOW_NAME, image)
+
+        if record:
+            out.write(image)
 
         key = cv2.waitKey(10)
 
@@ -123,6 +137,9 @@ if __name__ == "__main__":
             if calibrating and displayCapture:
                 displayCapture = False
             else:
-                result = getEyeTrackTemplate(cap, templateLeft, templateRight)
+                result = getEyeTrackTemplate(cap, templateLeft, templateRight, templateNose)
 
     cv2.destroyAllWindows()
+    if record:
+        out.release()
+
