@@ -1,4 +1,4 @@
-from gazeTrackerHelper import *
+from helpers import *
 from random import randint
 from learnAll import learn
 from noseHough import getNoseTemplate

@@ -145,7 +145,7 @@ def learn(dataX, dataY, labels):
 
 
 if __name__ == "__main__":
-    # getFeatures(True)
+    getFeatures(True)
 
     useScale = False
     # usePCA = False
@@ -162,5 +162,5 @@ if __name__ == "__main__":
         dataY = scaleMatrix(dataY)
 
     bestResult = learn(dataX, dataY, np.array(collect_calibrate.circleLoc))
-
+    print bestResult
     pickle.dump(bestResult, open('learnResult.pickle', 'wb'))

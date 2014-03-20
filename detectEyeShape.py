@@ -1,6 +1,6 @@
 from imports import *
 import math
-
+import time
 
 def getHoughCircle(origGrayImg):
     # Hough circle detection
@@ -127,5 +127,18 @@ if __name__ == "__main__":
 
     imgFile = sys.argv[1]
     origImg = cv2.imread(imgFile, cv2.CV_LOAD_IMAGE_GRAYSCALE)
-    result = getEyeFeatures(origImg, True, ('test', 'test'))
-    print result
+
+    # result = getEyeFeatures(origImg, True, ('test', 'test'))
+    #print result
+
+    start = time.clock()
+    circleOrig = getHoughCircle(origImg)
+    end = time.clock()
+    print 'time elapsed:', end - start
+    # circle = np.around(circleOrig).astype(int)   # round for display only
+    # newImg = cv2.cvtColor(origImg, cv2.COLOR_GRAY2RGB)
+    # cv2.circle(newImg, (circle[0], circle[1]), circle[2], (0, 255, 0), 1)
+    # cv2.circle(newImg, (circle[0], circle[1]), 1, (0, 255, 0), 1)
+    #
+    # plt.imshow(newImg)
+    # plt.show()

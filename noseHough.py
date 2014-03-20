@@ -6,10 +6,10 @@ def getNoseTemplate():
     img = cv2.imread('noseOutline.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
     index = np.vstack(img.nonzero()) # 2xM matrix , x co-ords in 2nd row
 
-    origin = np.array([21, 70]) #y, then x
+    origin = np.array([13, 67]) #y, then x
     template = {
         'right': origin,
-        'left': np.array([2, 21]),
+        'left': np.array([5, 14]),
         'bot': np.array([37, 21]),
         'top': np.array([36, 5]),
         'tileTup': (index.shape[1], 1),

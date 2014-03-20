@@ -34,10 +34,10 @@ def getAndDrawHough(image, template, posTuple):
         diff[0] = circle[0] - diff[0]
         diff[1] = circle[1] - diff[1]
 
-    # cv2.circle(image, tuple(offset + template['right'][::-1]), 2, (0, 255, 0))
-    cv2.circle(image, tuple(offset + template['top']), 2, (0, 255, 0))
+    cv2.circle(image, tuple(offset + template['right'][::-1]), 2, (0, 255, 0))
+    # cv2.circle(image, tuple(offset + template['top']), 2, (0, 255, 0))
     # cv2.circle(image, tuple(offset + template['bot']), 2, (0, 255, 0))
-    # cv2.circle(image, tuple(offset + template['left']), 2, (0, 255, 0))
+    cv2.circle(image, tuple(offset + template['left']), 2, (0, 255, 0))
 
 
 

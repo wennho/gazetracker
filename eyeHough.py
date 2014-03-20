@@ -71,9 +71,9 @@ def detectHough(grayImg, template, verbose=False):
 
         plt.show()
 
-        # cv2.imwrite('houghGray.png', grayImg)
-        # cv2.imwrite('houghCanny.png', cannyEdges)
-        # cv2.imwrite('houghImg.png', houghImg)
+        cv2.imwrite('houghGray.png', grayImg)
+        cv2.imwrite('houghCanny.png', cannyEdges)
+        cv2.imwrite('houghImg.png', houghImg)
     return offset
 
 
