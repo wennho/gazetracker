@@ -10,8 +10,7 @@ if __name__ == "__main__":
     record = True
 
     if record:
-
-        out = cv2.VideoWriter('output.avi',-1, 20, (640,480), True)
+        out = cv2.VideoWriter('output.avi', -1, 20, (640, 480), True)
 
     cap = cv2.VideoCapture(0)
     cv2.namedWindow(WINDOW_NAME, 0)
@@ -44,7 +43,7 @@ if __name__ == "__main__":
 
         ret, image = cap.read()
 
-        if framesSkipped < 5:
+        if framesSkipped < 10:
             framesSkipped += 1
             continue
 
@@ -60,12 +59,13 @@ if __name__ == "__main__":
         houghNose = getAndDrawHough(image, templateNose, result['nose'])
         result['nose'] = houghNose['posTuple']
 
-        data = np.array([
-            data[0] + result['eyeLeft'][0][0],
-            data[2] + result['eyeRight'][0][0],
-            data[1] + result['eyeLeft'][0][1],
-            data[3] + result['eyeRight'][0][1],
-        ])
+        # data = np.array([
+        #     data[0] + result['eyeLeft'][0][0],
+        #     data[2] + result['eyeRight'][0][0],
+        #     data[1] + result['eyeLeft'][0][1],
+        #     data[3] + result['eyeRight'][0][1],
+        # ])
+        data = data[[0, 2, 1, 3]]
 
         if calibrating:
             cv2.circle(image, calibrateTarget, 10, (0, 255, 255), 3)
@@ -84,7 +84,7 @@ if __name__ == "__main__":
             y = int(y * 0.7 + newY * 0.3)
 
             cv2.putText(image, str((int(x), int(y))), (100, 900), font, 1, (255, 255, 255), 2, cv2.CV_AA)
-            cv2.circle(image, (x, y), 10, (255, 0, 0),3)
+            cv2.circle(image, (x, y), 10, (255, 0, 0), 3)
 
         cv2.imshow(WINDOW_NAME, image)
 

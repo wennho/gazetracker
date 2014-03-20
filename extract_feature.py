@@ -1,74 +1,25 @@
 from imports import *
-from detectEyeShape import getEyeFeatures
+from helpers import getAndDrawHough, getEyeFacePos
 
+def extractFeatures(image, settings, imageNum=None):
+    result = getEyeFacePos(image, settings['face_cascade'], settings['eye_cascade'])
 
-def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+    if imageNum:
+        # save eye images
+        (xMin, yMin), (xMax, yMax) = result['eyeLeft']
+        eye = image[yMin:yMax, xMin:xMax]
+        cv2.imwrite('learnEyeLeft_' + str(imageNum) + '.png', eye)
 
-    if len(faces) == 0:
-        return None
+        (xMin, yMin), (xMax, yMax) = result['eyeRight']
+        eye = image[yMin:yMax, xMin:xMax]
+        cv2.imwrite('learnEyeRight_' + str(imageNum) + '.png', eye)
 
-    (x, y, w, h) = faces[0]
+    houghLeft = getAndDrawHough(image, settings['templateLeft'], result['eyeLeft'])
+    houghRight = getAndDrawHough(image, settings['templateRight'], result['eyeRight'])
+    data = np.vstack((houghLeft['features'], houghRight['features']))
 
-    result = {'face': (x, y, w, h)}
-
-    cv2.rectangle(image, (x, y), (x + w, y + h), (255, 0, 0), 2)
-    roi_color = image[y:y + h, x:x + w]
-    roi_gray = gray[y:y + h, x:x + w]
-
-    eyes = eye_cascade.detectMultiScale(roi_gray)
-    if len(eyes) < 2 or isinstance(eyes[0], (int, long, float)):
-        return None
-
-    indices = eyes[:, 1].argsort()[:2]
-    eyes = eyes[indices]  # take top 2 occurrences only
-    eyes = eyes[eyes[:, 0].argsort()]  # sort by x-axis
-
-    eyeNum = 0
-
-    for (ex, ey, ew, eh) in eyes:
-
-        eyeNum += 1
-        if eyeNum == 2:
-            ew += 15
-
-        if imageSaveName:
-            eyeColorImg = roi_color[ey:ey + eh, ex:ex + ew]
-            cv2.imwrite(imageSaveName + '.png', eyeColorImg)
-
-        # cv2.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (0, 255, 0), 2)
-
-        eyeName = 'eyeLeft' if eyeNum == 1 else 'eyeRight'
-        result[eyeName] = ((ex + x, int(ey + y + eh * 0.15)), (ex + x + ew, int(ey + y + eh * .85)))
-
-    # guesstimate nose position
-    x = (result['eyeLeft'][0][0] + result['eyeRight'][1][0]) / 2
-    y = (result['eyeLeft'][0][1] + result['eyeRight'][1][1]) / 2 + 80
-    result['nose'] = ((x - 50, y - 30), (x + 50, y + 30))
-
-    return result
-
-
-def extractFeatures(image, face_cascade, eye_cascade, verbose, imageSaveName=None):
-    featX = []
-    featY = []
-
-
-    # eyeGrayImg = roi_gray[ey:ey + eh, ex:ex + ew]
-    # eyeFeat = getEyeFeatures(eyeGrayImg, False)
-
-    # featX.append(eyeFeat['bottom'][0] + x + ex)
-    # featY.append(eyeFeat['bottom'][1] + y + ey)
-
-    # featX.append(eyeFeat['pupil'][0])
-    # featY.append(eyeFeat['pupil'][1])
-
-
-    if verbose:
-        roi_color = cv2.cvtColor(roi_color, cv2.COLOR_BGR2RGB)
-        plt.imshow(roi_color)
-        plt.show()
+    featX = data[:, 0]
+    featY = data[:, 1]
 
     return featX, featY
 

@@ -14,7 +14,7 @@ def getEyeCircle(grayImg, verbose=False):
     xx, yy = np.mgrid[:35, :35]
     circle = np.around(np.sqrt((xx - 17) ** 2 + (yy - 17) ** 2))
 
-    radii = range(12, 16)
+    radii = range(11, 15)
 
     for i, radius in enumerate(radii):
         # generate circle
@@ -49,7 +49,7 @@ def getEyeCircle(grayImg, verbose=False):
         plt.subplot(122), plt.imshow(colorImg)
         plt.show()
 
-    return (x, y, i)
+    return (x, y, radius)
 
 
 if __name__ == "__main__":

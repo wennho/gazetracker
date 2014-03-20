@@ -5,17 +5,28 @@ import collect_calibrate
 from numpy.linalg import norm
 from util import scale, scaleMatrix
 from sklearn.decomposition import PCA
+from eyeHough import *
 import pickle
 
 KERNEL = 'linear'
 
+
 def getFeatures(writeImg):
     dataX = []
     dataY = []
+
+    settings = {
+        'face_cascade': cv2.CascadeClassifier("haarcascade_frontalface_default.xml"),
+        'eye_cascade': cv2.CascadeClassifier('haarcascade_eye.xml'),
+        'templateLeft': getLeftEyeTemplate(),
+        'templateRight': getRightEyeTemplate(),
+    }
+
     for i in range(9):
         imgFile = 'calibrate_' + str(i) + '.png'
         image = cv2.imread(imgFile)
-        featX, featY = extractFeatures(image, i, False, writeImg)
+        imageNum = i if writeImg else None
+        featX, featY = extractFeatures(image, settings, imageNum)
         dataX.append(featX)
         dataY.append(featY)
         print 'Finished processing image', i
@@ -28,8 +39,6 @@ def getFeatures(writeImg):
 
 
 def crossValidate(dataX, dataY, labels, eps, C, verbose):
-
-
     error = []
     trainError = []
 
@@ -91,9 +100,9 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
 
     meanError = np.mean(error)
     medianError = np.median(error)
-    trainError = np.mean(trainError)
+    trainErrorMean = np.mean(trainError)
     if verbose:
-        print 'average train error:', trainError
+        print 'average train error:', trainErrorMean
         print 'average test error:', meanError
         print 'median test error:', medianError
 
@@ -103,7 +112,9 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
     ySVM = y_svm.fit(dataY, labels[:, 1])
 
     return {
-        'trainErr': trainError,
+        'trainErr': trainErrorMean,
+        'trainErrorData': trainError,
+        'errorData': error,
         'meanErr': meanError,
         'medianErr': medianError,
         'xSVM': xSVM,
@@ -113,9 +124,7 @@ def crossValidate(dataX, dataY, labels, eps, C, verbose):
     }
 
 
-
 def learn(dataX, dataY, labels):
-
     epsMin = 0.1
     epsMax = 10
     cMin = 1
@@ -123,14 +132,14 @@ def learn(dataX, dataY, labels):
 
     #grid search for best hyper-param
     eps = epsMin
-    bestResult = {'medianErr': 10000}
+    bestResult = {'meanErr': 10000}
     while eps < epsMax:
 
         C = cMin
         while C < cMax:
 
             result = crossValidate(dataX, dataY, labels, eps, C, False)
-            if result['medianErr'] < bestResult['medianErr']:
+            if result['meanErr'] < bestResult['meanErr']:
                 bestResult = result
                 print 'trainError:', result['trainErr']
                 print 'medianError:', result['medianErr']
@@ -143,7 +152,6 @@ def learn(dataX, dataY, labels):
     return bestResult
 
 
-
 if __name__ == "__main__":
     getFeatures(True)
 
@@ -154,13 +162,13 @@ if __name__ == "__main__":
     dataY = np.load('featureDataY.npy')
 
     # combine to provide higher dimensions
-    dataX = np.hstack((dataX, dataY))
-    dataY = dataX
+    # dataX = np.hstack((dataX, dataY))
+    # dataY = dataX
 
     if useScale:
         dataX = scaleMatrix(dataX)
         dataY = scaleMatrix(dataY)
 
     bestResult = learn(dataX, dataY, np.array(collect_calibrate.circleLoc))
-    print bestResult
+    # print bestResult
     pickle.dump(bestResult, open('learnResult.pickle', 'wb'))
