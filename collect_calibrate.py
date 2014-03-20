@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+from random import randint
 
 SCREEN_SIZE = (1920, 1080)
 
@@ -45,10 +45,10 @@ if __name__ == "__main__":
 
     state = 0
 
-    while True:
+    while state < 50:
 
         ret, image = cap.read()
-        cv2.circle(image, circleLoc[state], 10, (0, 255, 0))
+        cv2.circle(image, circleLoc[state], 10, (0, 255, 0), 4)
 
         key = cv2.waitKey(10)
         cv2.imshow(WINDOW_NAME, image)
@@ -59,10 +59,13 @@ if __name__ == "__main__":
             continue
 
         ret, image = cap.read()
-        cv2.imwrite('calibrate_' + str(state) + '.png', image)
+        cv2.imwrite('data/' + str(state) + '.png', image)
 
         state += 1
-        if state > len(circleLoc) - 1:
-            break
-
+        if state >= len(circleLoc):
+            # generate random sample
+            calibrateTarget = randint(20, 1900), randint(20, 1060)
+            circleLoc.append(calibrateTarget)
+        print state, ':', circleLoc[state]
+    np.save('calibLabels', circleLoc)
     cv2.destroyAllWindows()

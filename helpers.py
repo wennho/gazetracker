@@ -14,6 +14,7 @@ def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
     faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
     if len(faces) == 0:
+        print 'no faces found'
         return None
 
     (x, y, w, h) = faces[0]
@@ -26,6 +27,7 @@ def getEyeFacePos(image, face_cascade, eye_cascade, imageSaveName=None):
 
     eyes = eye_cascade.detectMultiScale(roi_gray)
     if len(eyes) < 2 or isinstance(eyes[0], (int, long, float)):
+        'not enough eyes found'
         return None
 
     indices = eyes[:, 1].argsort()[:2]

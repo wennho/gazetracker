@@ -22,7 +22,7 @@ def getFeatures(writeImg):
         'templateRight': getRightEyeTemplate(),
     }
 
-    for i in range(9):
+    for i in range(50):
         imgFile = 'calibrate_' + str(i) + '.png'
         image = cv2.imread(imgFile)
         imageNum = i if writeImg else None
@@ -153,7 +153,7 @@ def learn(dataX, dataY, labels):
 
 
 if __name__ == "__main__":
-    getFeatures(True)
+    getFeatures(False)
 
     useScale = False
     # usePCA = False

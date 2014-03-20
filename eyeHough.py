@@ -1,6 +1,6 @@
 from imports import *
 import time
-
+from houghTemplates import getMouthTemplate
 
 def getLeftEyeTemplate():
     img = cv2.imread('leftOutline.png', cv2.CV_LOAD_IMAGE_GRAYSCALE)
@@ -80,17 +80,24 @@ def detectHough(grayImg, template, verbose=False):
 if __name__ == "__main__":
 
     if len(sys.argv) < 3:
-        print 'Usage: python ' + __file__ + ' <image> <isLeft>'
+        print 'Usage: python ' + __file__ + ' <image> <template>'
         sys.exit()
 
-    if int(sys.argv[2]) > 0:
-        template = getLeftEyeTemplate()
+    if sys.argv[2] == 'left':
+        tmpl = getLeftEyeTemplate()
+    elif sys.argv[2] == 'right':
+        tmpl = getRightEyeTemplate()
+    elif sys.argv[2] == 'mouth':
+        tmpl = getMouthTemplate()
     else:
-        template = getRightEyeTemplate()
+        print 'Usage: python ' + __file__ + ' <image> <template>'
+        print 'Specified template not found'
+        sys.exit()
+
     testImg = cv2.imread(sys.argv[1], cv2.CV_LOAD_IMAGE_COLOR)
     grayImg = cv2.cvtColor(testImg, cv2.COLOR_BGR2GRAY)
 
     start = time.clock()
-    offset = detectHough(grayImg, template, True)
+    offset = detectHough(grayImg, tmpl, True)
     end = time.clock()
     print 'time elapsed:', end - start
